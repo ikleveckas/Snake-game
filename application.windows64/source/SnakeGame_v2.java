@@ -14,25 +14,36 @@ import java.io.IOException;
 
 public class SnakeGame_v2 extends PApplet {
 
-int[][] grid;
-int x,y,vX,vY,fX,fY;
-int ilgis;
+// My own project before starting university.
+
+
+int[][] grid; // the main game board
+int x,y; // snake's head coordinates on the board
+int vX,vY; // velocity in x and y direction
+int foodX,foodY;  // food x and y coordinates
+int snakeLength;
+final int FRAMERATE = 18; // default game speed
+final int DEFAULT_NR_ROWS = 25;
+final int DEFAULT_NR_COLS = 25;
 boolean gameRunning;
-boolean hasTurned;
+boolean hasTurned; // used for not allowing player to turn several times in one frame
 PImage img;
 PFont f;
+
 public void setup()
 {
-  frameRate(18);
+  frameRate(FRAMERATE);
+  // starting direction is downwards
   vX = 0;
   vY = 1;
-  ilgis = 1;
-  x = 0; // galvos x
-  y = 0; // galvos y
+  snakeLength = 1;
+  x = 0; // head x
+  y = 0; // head y
   gameRunning = true;
   hasTurned = false;
+  // game screen is 500px horizontally and 570px vertically
   
-  grid = new int [25][25];
+  grid = new int [DEFAULT_NR_COLS][DEFAULT_NR_ROWS];
   img = loadImage("YouDied.png");
   f = loadFont("ComicSansMS-Bold-40.vlw");
   Grid ();
@@ -40,7 +51,7 @@ public void setup()
   background (20);
 }
 
-public void draw()
+public void draw() // Main game loop
 {
   background(20);
   if(gameRunning)
@@ -58,9 +69,9 @@ public void draw()
   }
 }
 
-public void Grid() // Tinkelis skirtas informacijai saugoti.
+public void Grid() // Starting grid data is initialised.
 {
-  for (int i=0; i<25; i++) for (int j=0; j<25; j++)
+  for (int i=0; i<DEFAULT_NR_ROWS; i++) for (int j=0; j<DEFAULT_NR_COLS; j++)
   {
     grid [i][j] = 0;
   }
@@ -70,7 +81,9 @@ public void MoveHead()
 {
     if (vY != 0)
     {
-      if(y==24 && vY>0) y=0;
+      // The snakes head is moved to the other side of the board
+      // if it touches the edge and the direction does not change.
+      if(y==DEFAULT_NR_ROWS-1 && vY>0) y=0;
       else if(y==0 && vY<0) y=24;
       else y+=vY;
       checkLose();
@@ -78,7 +91,7 @@ public void MoveHead()
     }
     if (vX != 0)
     {
-      if(x==24 && vX>0) x=0;
+      if(x==DEFAULT_NR_COLS-1 && vX>0) x=0;
       else if(x==0 && vX<0) x=24;
       else x+=vX;
       checkLose();
@@ -88,16 +101,17 @@ public void MoveHead()
 
 public void MoveSnake()
 {
-  for(int i=0; i<25; i++) for (int j=0; j<25; j++)
-  {
-   if (grid[i][j]==ilgis) grid[i][j]=0;
-   else if (grid[i][j] > 0) grid[i][j]++;
-  }
+  for(int i=0; i<DEFAULT_NR_ROWS; i++) 
+    for (int j=0; j<DEFAULT_NR_COLS; j++)
+    {
+     if (grid[i][j]==snakeLength) grid[i][j]=0;
+     else if (grid[i][j] > 0) grid[i][j]++;
+    }
 }
 
-public void keyPressed()
+public void keyPressed() // Used for changing direction of the snake.
 {
-  if (!hasTurned)
+  if (!hasTurned) // this ensures that no more than 1 turn is done in one frame
   {
     if((keyCode == UP || key=='w') && vY==0) 
     {
@@ -126,60 +140,61 @@ public void keyPressed()
   }
 }
 
-public void foodCoordinates()
+public void foodCoordinates() // Generates coordinates for food.
 { 
-  fX = (int) random(25); // foodX
-  fY = (int) random(25); // foodY
-  println(fX, fY, x, y);
-  if(grid[fY][fX]>0 || (fX==x && fX==y)) foodCoordinates();
-  else grid[fY][fX] = -1;
+  foodX = (int) random(DEFAULT_NR_COLS); // foodX
+  foodY = (int) random(DEFAULT_NR_ROWS); // foodY
+  if(grid[foodY][foodX]>0 || (foodX==x && foodX==y)) foodCoordinates();
+  else grid[foodY][foodX] = -1;
+  println(foodX, foodY, x, y);
 }
 
-public void checkFood()
+public void checkFood() // Checks if the snake eats food.
 {
-  if (x==fX && y==fY)
+  if (x==foodX && y==foodY)
   {
     grid[y][x]=1;
     foodCoordinates();
-    ilgis++;
+    snakeLength++;
   }
   else grid[y][x]+=1;
 }
 
-public void checkLose()
+public void checkLose() // Checks if the snake has bitten itself.
 {
   if (grid[y][x]>0) gameRunning=false;
 }
 
-public void Display()
+public void Display() // Visually displays the game board.
 {
  fill(237, 41, 57);
- rect (fX*20,fY*20,20,20);
- for(int i = 0; i < 25; i++) for (int j = 0; j < 25; j++)
- {
-   fill(255);
-   if (grid[i][j] > 0) rect (j*20,i*20,20,20);
- }
+ rect (foodX*20,foodY*20,20,20);
+ for(int i=0; i<DEFAULT_NR_ROWS; i++) 
+   for (int j=0; j<DEFAULT_NR_COLS; j++)
+   {
+     fill(255);
+     if (grid[i][j] > 0) rect (j*20,i*20,20,20);
+   }
 }
 
-public void Scoreboard()
+public void Scoreboard() // Displays the scoreboard.
 {
   fill(30);
   rect(0, 500, 500, 70);
   textFont(f);
   fill(237, 41, 57);
-  String txt = "Score: " + ilgis;
+  String txt = "Score: " + snakeLength;
   text(txt,10,550);
 }    
 
-public void EndScore()
+public void EndScore() // Displays the endscore.
 {
   textFont(f);
   fill(237, 41, 57);
-  String txt = "Final Score: " + ilgis;
+  String txt = "Final Score: " + snakeLength;
   text(txt,112,400);
 }
-  public void settings() {  size (500,570); }
+  public void settings() {  size (500, 570); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "SnakeGame_v2" };
     if (passedArgs != null) {

@@ -1,7 +1,7 @@
 // My own project before starting university.
 
 
-int[][] grid; // the main gaim board
+int[][] grid; // the main game board
 int x,y; // snake's head coordinates on the board
 int vX,vY; // velocity in x and y direction
 int foodX,foodY;  // food x and y coordinates
